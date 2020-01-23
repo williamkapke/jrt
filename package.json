@@ -1,0 +1,29 @@
+{
+  "name": "jrt",
+  "version": "1.0.0",
+  "description": "A Node.js module for a JRT laser distance sensor",
+  "main": "jrt.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/williamkapke/jrt.git"
+  },
+  "keywords": [
+    "JRT",
+    "U8",
+    "U81",
+    "U85"
+  ],
+  "author": "William Kapke",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/williamkapke/jrt/issues"
+  },
+  "homepage": "https://github.com/williamkapke/jrt#readme",
+  "dependencies": {
+    "debug": "^4.1.1",
+    "serialport": "^8.0.6"
+  }
+}
