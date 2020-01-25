@@ -55,15 +55,32 @@ const ERRORS = {
   0x0081: 'Invalid Frame',
 }
 
-module.exports.open = async (id, baudRate = 19200) => {
+module.exports.open = async (id, baudRate = 19200, timeout = 5000) => {
+  debug('opening', id, baudRate)
   const port = new DefaultBindings({})
-  await port.open(id, { baudRate, autoOpen:true }).then(async () => {
-    await port.set({ dtr: false })
-  })
+  await port.open(id, { baudRate, autoOpen:true })
+  await port.write(Buffer.from([0x58]))
+  await sleep(50)
+  await port.set({ dtr: false })
   await port.flush()
   await sleep(200)
   await port.write(CMD.AUTO_BAUDRATE())
-  const result = await port.read(Buffer.alloc(1), 0, 1)
+
+  let result
+  let timedout = false
+  debug('waiting for address')
+  setTimeout(() => {
+    if (result) return
+    timedout = true
+    port.close()
+  }, timeout)
+
+  result = await port.read(Buffer.alloc(1), 0, 1).catch((err) => {
+    err = timedout? new Error('TIMEOUT') : err
+    debug(err)
+    throw err
+  })
+
   return handler(port, result.buffer[0])
 }
 
@@ -162,7 +179,7 @@ const handler = (port, addr) => {
     oneshot_auto:    () => read('ONESHOT_AUTO'),
     oneshot_slow:    () => read('ONESHOT_SLOW'),
     oneshot_fast:    () => read('ONESHOT_FAST'),
-    continuous_exit: () => write(CMD.CONTINUOUS_EXIT(addr)),
+    continuous_exit: () => write(CMD.CONTINUOUS_EXIT()),
     continuous_auto: () => write(CMD.CONTINUOUS_AUTO(addr)),
     continuous_slow: () => write(CMD.CONTINUOUS_SLOW(addr)),
     continuous_fast: () => write(CMD.CONTINUOUS_FAST(addr)),
